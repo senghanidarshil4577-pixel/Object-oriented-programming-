@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Management System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+/* ────────────────────────────────────────
+   RESET & TOKENS
+──────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy:   #07091a;
+  --deep:   #0c0e2a;
+  --card:   #111430;
+  --border: rgba(120,130,255,.13);
+  --accent: #6c63ff;
+  --accent2:#a78bfa;
+  --accent3:#38bdf8;
+  --text:   #e2e4f0;
+  --muted:  #8b91b8;
+  --white:  #ffffff;
+  --grad: linear-gradient(135deg, #6c63ff 0%, #a78bfa 50%, #38bdf8 100%);
+  --font-head: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --radius: 16px;
+  --transition: .3s cubic-bezier(.4,0,.2,1);
+}
+
+html { scroll-behavior: smooth; font-size: 16px; }
+
+body {
+  background: var(--navy);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-weight: 300;
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* ────────────────────────────────────────
+   SCROLLBAR
+──────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--deep); }
+::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
+
+/* ────────────────────────────────────────
+   TYPOGRAPHY
+──────────────────────────────────────── */
+h1,h2,h3 { font-family: var(--font-head); font-weight: 700; }
+
+code {
+  font-family: 'Courier New', monospace;
+  font-size: .82em;
+  color: var(--accent3);
+}
+
+/* ────────────────────────────────────────
+   NAVBAR
+──────────────────────────────────────── */
+.navbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  transition: background var(--transition), box-shadow var(--transition);
+}
+.navbar.scrolled {
+  background: rgba(7,9,26,.92);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 1px 0 var(--border);
+}
+.nav-inner {
+  max-width: 1200px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.1rem 2rem;
+}
+.nav-logo {
+  font-family: var(--font-head); font-size: 1.5rem; font-weight: 800;
+  color: var(--white); text-decoration: none; letter-spacing: -1px;
+}
+.dot { color: var(--accent); }
+
+.nav-links {
+  list-style: none;
+  display: flex; gap: 2.2rem;
+}
+.nav-links a {
+  color: var(--muted); text-decoration: none;
+  font-size: .9rem; font-weight: 400; letter-spacing: .04em;
+  transition: color var(--transition);
+  position: relative;
+}
+.nav-links a::after {
+  content: ''; position: absolute; bottom: -3px; left: 0; right: 0;
+  height: 1px; background: var(--accent); transform: scaleX(0);
+  transition: transform var(--transition); transform-origin: left;
+}
+.nav-links a:hover { color: var(--white); }
+.nav-links a:hover::after { transform: scaleX(1); }
+
+.burger {
+  display: none; flex-direction: column; gap: 5px;
+  background: none; border: none; cursor: pointer; padding: 4px;
+}
+.burger span {
+  display: block; width: 22px; height: 2px;
+  background: var(--text); border-radius: 2px;
+  transition: var(--transition);
+}
+
+/* ────────────────────────────────────────
+   HERO
+──────────────────────────────────────── */
+.hero {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+  padding: 7rem 2rem 4rem;
+}
+.hero-bg {
+  position: absolute; inset: 0; pointer-events: none;
+}
+.orb {
+  position: absolute; border-radius: 50%;
+  filter: blur(80px); opacity: .55;
+}
+.orb1 {
+  width: 520px; height: 520px;
+  background: radial-gradient(circle, #6c63ff 0%, transparent 70%);
+  top: -120px; left: -100px;
+  animation: drift1 12s ease-in-out infinite alternate;
+}
+.orb2 {
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, #a78bfa 0%, transparent 70%);
+  bottom: -80px; right: -60px;
+  animation: drift2 10s ease-in-out infinite alternate;
+}
+.orb3 {
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, #38bdf8 0%, transparent 70%);
+  top: 40%; left: 55%;
+  animation: drift1 14s ease-in-out infinite alternate-reverse;
+}
+@keyframes drift1 { from { transform: translate(0,0) scale(1); } to { transform: translate(40px,-30px) scale(1.08); } }
+@keyframes drift2 { from { transform: translate(0,0) scale(1); } to { transform: translate(-30px,20px) scale(1.05); } }
+
+.grid-overlay {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(108,99,255,.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(108,99,255,.06) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+.hero-content {
+  position: relative; text-align: center; max-width: 760px;
+  display: flex; flex-direction: column; align-items: center; gap: 1.4rem;
+}
+.hero-badge {
+  display: inline-block;
+  padding: .35rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  font-size: .78rem; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--accent2);
+  background: rgba(108,99,255,.08);
+}
+.hero-title {
+  font-size: clamp(3rem, 9vw, 6.5rem);
+  line-height: 1.05; letter-spacing: -2px;
+  color: var(--white);
+}
+.hero-title em {
+  font-style: normal;
+  background: var(--grad);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hero-sub {
+  max-width: 520px; font-size: 1.05rem; color: var(--muted);
+  line-height: 1.65;
+}
+.hero-scroll-hint {
+  position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+  font-size: .7rem; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--muted); opacity: .5;
+  animation: bounce 2s ease-in-out infinite;
+}
+@keyframes bounce { 0%,100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(6px); } }
+
+/* ────────────────────────────────────────
+   BUTTONS
+──────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; gap: .5rem;
+  padding: .85rem 2rem; border-radius: 100px;
+  font-family: var(--font-head); font-size: .95rem; font-weight: 600;
+  cursor: pointer; text-decoration: none; border: none;
+  transition: transform var(--transition), box-shadow var(--transition), filter var(--transition);
+  letter-spacing: .02em;
+}
+.btn-primary {
+  background: var(--grad);
+  color: var(--white);
+  box-shadow: 0 8px 32px rgba(108,99,255,.35);
+}
+.btn-primary:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 14px 40px rgba(108,99,255,.5);
+  filter: brightness(1.1);
+}
+.btn-primary:active { transform: translateY(0) scale(.98); }
+.arrow { transition: transform var(--transition); }
+.btn:hover .arrow { transform: translateY(3px); }
+.btn:hover .arrow.right { transform: translateX(4px); }
+
+/* ────────────────────────────────────────
+   SECTIONS SHARED
+──────────────────────────────────────── */
+.section { padding: 7rem 2rem; position: relative; }
+.container { max-width: 1160px; margin: 0 auto; }
+.section-tag {
+  display: inline-block; margin-bottom: 1rem;
+  font-size: .75rem; letter-spacing: .15em; text-transform: uppercase;
+  color: var(--accent2);
+  padding: .25rem .75rem;
+  border: 1px solid rgba(167,139,250,.25);
+  border-radius: 100px;
+  background: rgba(167,139,250,.06);
+}
+.section-title {
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  letter-spacing: -1px; color: var(--white); margin-bottom: .75rem;
+}
+.section-sub {
+  max-width: 540px; color: var(--muted); font-size: 1rem; margin-bottom: 3.5rem;
+}
+
+/* ────────────────────────────────────────
+   ABOUT
+──────────────────────────────────────── */
+.about { background: var(--deep); }
+.about::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0;
+  height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent);
+}
+.about-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;
+}
+.about-text h2 { font-size: clamp(1.8rem,4vw,2.6rem); color: var(--white); margin-bottom: 1.2rem; letter-spacing: -.5px; }
+.about-text p { color: var(--muted); margin-bottom: .9rem; }
+.about-text strong { color: var(--accent2); font-weight: 500; }
+
+.about-stats {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+}
+.stat-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.6rem 1.4rem;
+  display: flex; flex-direction: column; gap: .3rem;
+  transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+}
+.stat-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(108,99,255,.4);
+  box-shadow: 0 12px 40px rgba(108,99,255,.15);
+}
+.stat-num {
+  font-family: var(--font-head); font-size: 2rem; font-weight: 800;
+  background: var(--grad); -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.stat-label { font-size: .8rem; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; }
+
+/* ────────────────────────────────────────
+   OOP CARDS
+──────────────────────────────────────── */
+.oop { background: var(--navy); }
+.oop-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.4rem;
+  margin-top: 1rem;
+}
+.oop-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 2rem 1.6rem;
+  position: relative; overflow: hidden;
+  transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+  animation-delay: var(--delay);
+}
+.oop-card::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(108,99,255,.07) 0%, transparent 60%);
+  opacity: 0; transition: opacity var(--transition);
+}
+.oop-card:hover { transform: translateY(-6px); border-color: rgba(108,99,255,.45); box-shadow: 0 20px 50px rgba(108,99,255,.18); }
+.oop-card:hover::before { opacity: 1; }
+.oop-icon {
+  font-size: 2rem; margin-bottom: 1rem;
+  background: var(--grad); -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.oop-card h3 { font-size: 1.15rem; color: var(--white); margin-bottom: .6rem; }
+.oop-card p { font-size: .9rem; color: var(--muted); margin-bottom: 1rem; }
+.oop-snippet {
+  display: block;
+  padding: .55rem .85rem;
+  background: rgba(7,9,26,.7);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  font-size: .78rem;
+}
+
+/* ────────────────────────────────────────
+   FEATURES
+──────────────────────────────────────── */
+.features { background: var(--deep); }
+.features::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0;
+  height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent);
+}
+.features-list { display: flex; flex-direction: column; gap: .9rem; margin-top: 1rem; }
+
+.feature-item {
+  display: flex; align-items: center; gap: 1.5rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem 2rem;
+  transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+  cursor: default;
+}
+.feature-item:hover {
+  transform: translateX(6px);
+  border-color: rgba(108,99,255,.4);
+  box-shadow: 0 8px 32px rgba(108,99,255,.12);
+}
+.feature-num {
+  font-family: var(--font-head); font-size: 1.7rem; font-weight: 800;
+  color: rgba(108,99,255,.25); min-width: 46px;
+  transition: color var(--transition);
+}
+.feature-item:hover .feature-num { color: var(--accent); }
+.feature-body { flex: 1; }
+.feature-body h3 { color: var(--white); font-size: 1.05rem; margin-bottom: .25rem; }
+.feature-body p { color: var(--muted); font-size: .88rem; }
+.feature-icon {
+  font-size: 1.5rem; color: var(--accent2); opacity: .5;
+  transition: opacity var(--transition), transform var(--transition);
+  min-width: 32px; text-align: center;
+}
+.feature-item:hover .feature-icon { opacity: 1; transform: scale(1.2); }
+
+/* ────────────────────────────────────────
+   DEMO
+──────────────────────────────────────── */
+.demo { background: var(--navy); }
+.demo-wrapper {
+  display: grid; grid-template-columns: 380px 1fr; gap: 2rem; margin-top: 1rem;
+  align-items: start;
+}
+
+/* Form Panel */
+.demo-form-panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 2rem;
+}
+.demo-form-panel h3 { color: var(--white); font-size: 1.15rem; margin-bottom: 1.5rem; }
+.form-group { margin-bottom: 1.2rem; }
+.form-group label {
+  display: block; font-size: .8rem; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: .4rem;
+}
+.form-group input {
+  width: 100%;
+  background: rgba(7,9,26,.6);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: .75rem 1rem;
+  color: var(--white); font-family: var(--font-body); font-size: .95rem;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  outline: none;
+}
+.form-group input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(108,99,255,.18);
+}
+.form-group input::placeholder { color: rgba(139,145,184,.4); }
+.form-msg {
+  margin-top: .9rem; font-size: .85rem; min-height: 1.2em;
+  transition: opacity .3s;
+}
+.form-msg.success { color: #4ade80; }
+.form-msg.error   { color: #f87171; }
+
+/* List Panel */
+.demo-list-panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 2rem;
+  min-height: 280px;
+}
+.list-header {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.4rem;
+}
+.list-header h3 { color: var(--white); font-size: 1.15rem; }
+.count-badge {
+  background: rgba(108,99,255,.18); border: 1px solid rgba(108,99,255,.3);
+  border-radius: 100px; padding: .2rem .75rem;
+  font-size: .75rem; color: var(--accent2); font-weight: 500;
+}
+.student-table-wrap { overflow-x: auto; }
+.student-table {
+  width: 100%; border-collapse: collapse; font-size: .88rem;
+}
+.student-table th {
+  text-align: left; padding: .65rem 1rem;
+  font-size: .72rem; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted); border-bottom: 1px solid var(--border);
+}
+.student-table td {
+  padding: .8rem 1rem; border-bottom: 1px solid rgba(120,130,255,.06);
+  color: var(--text); vertical-align: middle;
+}
+.student-table tbody tr {
+  transition: background var(--transition);
+}
+.student-table tbody tr:hover { background: rgba(108,99,255,.06); }
+.student-table tbody tr.row-enter {
+  animation: rowIn .4s ease forwards;
+}
+@keyframes rowIn {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.del-btn {
+  background: rgba(248,113,113,.1); border: 1px solid rgba(248,113,113,.25);
+  border-radius: 6px; padding: .3rem .7rem;
+  color: #f87171; font-size: .78rem; cursor: pointer;
+  transition: background var(--transition), transform var(--transition);
+}
+.del-btn:hover { background: rgba(248,113,113,.25); transform: scale(1.05); }
+
+.empty-state {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 140px; color: var(--muted); font-size: .9rem;
+}
+
+/* ────────────────────────────────────────
+   TECHNOLOGIES
+──────────────────────────────────────── */
+.tech { background: var(--deep); }
+.tech::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0;
+  height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent);
+}
+.tech-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.4rem; margin-top: 1rem;
+}
+.tech-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 2rem 1.8rem;
+  transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+}
+.tech-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(56,189,248,.35);
+  box-shadow: 0 16px 44px rgba(56,189,248,.12);
+}
+.tech-logo {
+  width: 60px; height: 60px;
+  border-radius: 14px; margin-bottom: 1.2rem;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-head); font-size: 1.1rem; font-weight: 800;
+  letter-spacing: -.5px;
+}
+.cpp  { background: linear-gradient(135deg,#00437a,#0284c7); color: #fff; }
+.oop  { background: linear-gradient(135deg,#4f1d96,#7c3aed); color: #fff; }
+.stl  { background: linear-gradient(135deg,#065f46,#059669); color: #fff; }
+.tech-card h3 { color: var(--white); font-size: 1.05rem; margin-bottom: .5rem; }
+.tech-card p  { color: var(--muted); font-size: .88rem; }
+
+/* ────────────────────────────────────────
+   FOOTER
+──────────────────────────────────────── */
+.footer {
+  background: var(--deep);
+  border-top: 1px solid var(--border);
+  padding: 4rem 2rem;
+  text-align: center;
+}
+.footer-inner { display: flex; flex-direction: column; align-items: center; gap: .6rem; }
+.footer-logo {
+  font-family: var(--font-head); font-size: 2rem; font-weight: 800;
+  color: var(--white); margin-bottom: .4rem;
+}
+.footer-title { color: var(--white); font-size: 1rem; font-weight: 500; }
+.footer-sub   { color: var(--muted); font-size: .88rem; }
+.footer-divider {
+  width: 60px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+  margin: 1rem 0;
+}
+.footer-copy { color: rgba(139,145,184,.4); font-size: .78rem; }
+
+/* ────────────────────────────────────────
+   REVEAL ANIMATION
+──────────────────────────────────────── */
+.reveal {
+  opacity: 0; transform: translateY(28px);
+  transition: opacity .65s ease, transform .65s ease;
+  transition-delay: var(--delay, 0s);
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ────────────────────────────────────────
+   RESPONSIVE
+──────────────────────────────────────── */
+@media (max-width: 900px) {
+  .about-grid { grid-template-columns: 1fr; gap: 3rem; }
+  .demo-wrapper { grid-template-columns: 1fr; }
+  .oop-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 680px) {
+  .nav-links {
+    display: none; flex-direction: column; gap: 0;
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(7,9,26,.97);
+    align-items: center; justify-content: center;
+    gap: 2rem;
+  }
+  .nav-links.open { display: flex; }
+  .nav-links a { font-size: 1.4rem; }
+  .burger { display: flex; z-index: 200; }
+  .navbar.menu-open .burger span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .navbar.menu-open .burger span:nth-child(2) { opacity: 0; }
+  .navbar.menu-open .burger span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  .hero-title { letter-spacing: -1px; }
+  .section { padding: 5rem 1.2rem; }
+  .oop-grid { grid-template-columns: 1fr; }
+  .about-stats { grid-template-columns: 1fr 1fr; }
+  .feature-item { flex-wrap: wrap; }
+  .feature-icon { display: none; }
+  .demo-form-panel, .demo-list-panel { padding: 1.4rem; }
+  .tech-grid { grid-template-columns: 1fr; }
+}
+  </style>
+</head>
+<body>
+
+  <!-- ── NAVBAR ── -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a class="nav-logo" href="#hero">SMS<span class="dot">.</span></a>
+      <button class="burger" id="burger" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#about">About</a></li>
+        <li><a href="#oop">OOP</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#demo">Demo</a></li>
+        <li><a href="#tech">Tech</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <section class="hero" id="hero">
+    <div class="hero-bg">
+      <div class="orb orb1"></div>
+      <div class="orb orb2"></div>
+      <div class="orb orb3"></div>
+      <div class="grid-overlay"></div>
+    </div>
+    <div class="hero-content reveal">
+      <span class="hero-badge">C++ · OOP · College Project</span>
+      <h1 class="hero-title">Student<br /><em>Management</em><br />System</h1>
+      <p class="hero-sub">A simple, efficient system to manage student records — built with C++ and object-oriented design principles.</p>
+      <a href="#features" class="btn btn-primary">View Features <span class="arrow">↓</span></a>
+    </div>
+    <div class="hero-scroll-hint">scroll</div>
+  </section>
+
+  <!-- ── ABOUT ── -->
+  <section class="section about" id="about">
+    <div class="container">
+      <div class="section-tag reveal">About the Project</div>
+      <div class="about-grid">
+        <div class="about-text reveal">
+          <h2>What is this system?</h2>
+          <p>The Student Management System is a console-based application designed to simplify how educational institutions handle student data. It allows administrators to add, view, search, update, and delete student records with ease.</p>
+          <p>The core application is written in <strong>C++</strong> using the principles of <strong>Object-Oriented Programming</strong> — keeping the codebase modular, maintainable, and scalable. This web interface showcases its design and key concepts interactively.</p>
+        </div>
+        <div class="about-stats reveal">
+          <div class="stat-card">
+            <span class="stat-num">5</span>
+            <span class="stat-label">Core Operations</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-num">4</span>
+            <span class="stat-label">OOP Pillars</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-num">C++</span>
+            <span class="stat-label">Primary Language</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-num">STL</span>
+            <span class="stat-label">Vector Used</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── OOP CONCEPTS ── -->
+  <section class="section oop" id="oop">
+    <div class="container">
+      <div class="section-tag reveal">Core Concepts</div>
+      <h2 class="section-title reveal">OOP Pillars</h2>
+      <p class="section-sub reveal">The four fundamental principles of Object-Oriented Programming applied in this project.</p>
+      <div class="oop-grid">
+        <div class="oop-card reveal" style="--delay:0s">
+          <div class="oop-icon">⬡</div>
+          <h3>Encapsulation</h3>
+          <p>Student data and methods are bundled inside a class, hiding internal state from outside interference and exposing only necessary interfaces.</p>
+          <code class="oop-snippet">class Student { private: int id; ... };</code>
+        </div>
+        <div class="oop-card reveal" style="--delay:.1s">
+          <div class="oop-icon">◈</div>
+          <h3>Inheritance</h3>
+          <p><code>Student</code> inherits shared attributes like name and age from the base <code>Person</code> class, promoting code reuse and a clean hierarchy.</p>
+          <code class="oop-snippet">class Student : public Person { ... };</code>
+        </div>
+        <div class="oop-card reveal" style="--delay:.2s">
+          <div class="oop-icon">◎</div>
+          <h3>Abstraction</h3>
+          <p>Complex implementation details are hidden behind simple interfaces. Users interact with high-level methods without needing to know the internals.</p>
+          <code class="oop-snippet">student.display(); // hides logic</code>
+        </div>
+        <div class="oop-card reveal" style="--delay:.3s">
+          <div class="oop-icon">⬠</div>
+          <h3>Polymorphism</h3>
+          <p>The same function name behaves differently depending on context — virtual functions allow derived classes to override base class behavior.</p>
+          <code class="oop-snippet">virtual void display() override;</code>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FEATURES ── -->
+  <section class="section features" id="features">
+    <div class="container">
+      <div class="section-tag reveal">Capabilities</div>
+      <h2 class="section-title reveal">System Features</h2>
+      <div class="features-list">
+        <div class="feature-item reveal" style="--delay:0s">
+          <div class="feature-num">01</div>
+          <div class="feature-body">
+            <h3>Add Student</h3>
+            <p>Register new students into the system with a unique ID, full name, and age. Data is stored efficiently using C++ STL vectors.</p>
+          </div>
+          <div class="feature-icon">＋</div>
+        </div>
+        <div class="feature-item reveal" style="--delay:.08s">
+          <div class="feature-num">02</div>
+          <div class="feature-body">
+            <h3>Display Students</h3>
+            <p>View a complete, formatted list of all registered students with their ID, name, and age in a clean tabular format.</p>
+          </div>
+          <div class="feature-icon">≡</div>
+        </div>
+        <div class="feature-item reveal" style="--delay:.16s">
+          <div class="feature-num">03</div>
+          <div class="feature-body">
+            <h3>Search Student</h3>
+            <p>Quickly locate a specific student record by their unique ID using an efficient linear search implementation.</p>
+          </div>
+          <div class="feature-icon">⌕</div>
+        </div>
+        <div class="feature-item reveal" style="--delay:.24s">
+          <div class="feature-num">04</div>
+          <div class="feature-body">
+            <h3>Update Student</h3>
+            <p>Edit and update an existing student's details — name or age — by referencing their student ID.</p>
+          </div>
+          <div class="feature-icon">✎</div>
+        </div>
+        <div class="feature-item reveal" style="--delay:.32s">
+          <div class="feature-num">05</div>
+          <div class="feature-body">
+            <h3>Delete Student</h3>
+            <p>Remove a student record permanently from the system using their ID, with the vector auto-updating to reflect the change.</p>
+          </div>
+          <div class="feature-icon">✕</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── DEMO ── -->
+  <section class="section demo" id="demo">
+    <div class="container">
+      <div class="section-tag reveal">Interactive</div>
+      <h2 class="section-title reveal">Live Demo</h2>
+      <p class="section-sub reveal">Simulate the system's Add &amp; Delete operations right here in your browser.</p>
+
+      <div class="demo-wrapper reveal">
+        <div class="demo-form-panel">
+          <h3>Add a Student</h3>
+          <div class="form-group">
+            <label for="studentId">Student ID</label>
+            <input type="number" id="studentId" placeholder="e.g. 1021" min="1" />
+          </div>
+          <div class="form-group">
+            <label for="studentName">Full Name</label>
+            <input type="text" id="studentName" placeholder="e.g. Alice Johnson" />
+          </div>
+          <div class="form-group">
+            <label for="studentAge">Age</label>
+            <input type="number" id="studentAge" placeholder="e.g. 20" min="1" max="99" />
+          </div>
+          <button class="btn btn-primary" id="addStudentBtn">Add Student <span class="arrow">→</span></button>
+          <div class="form-msg" id="formMsg"></div>
+        </div>
+
+        <div class="demo-list-panel">
+          <div class="list-header">
+            <h3>Student Records</h3>
+            <span class="count-badge" id="countBadge">0 records</span>
+          </div>
+          <div class="student-table-wrap">
+            <table class="student-table" id="studentTable">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Age</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="studentTbody">
+                <!-- rows injected by JS -->
+              </tbody>
+            </table>
+            <div class="empty-state" id="emptyState">
+              <span>No students yet. Add one!</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── TECHNOLOGIES ── -->
+  <section class="section tech" id="tech">
+    <div class="container">
+      <div class="section-tag reveal">Built With</div>
+      <h2 class="section-title reveal">Technologies</h2>
+      <div class="tech-grid">
+        <div class="tech-card reveal" style="--delay:0s">
+          <div class="tech-logo cpp">C++</div>
+          <h3>C++</h3>
+          <p>High-performance systems language used to implement all core logic, classes, and data management.</p>
+        </div>
+        <div class="tech-card reveal" style="--delay:.1s">
+          <div class="tech-logo oop">OOP</div>
+          <h3>Object-Oriented Programming</h3>
+          <p>Design paradigm structuring the application around reusable, self-contained objects and classes.</p>
+        </div>
+        <div class="tech-card reveal" style="--delay:.2s">
+          <div class="tech-logo stl">STL</div>
+          <h3>STL · Vector</h3>
+          <p>C++ Standard Template Library's <code>std::vector</code> provides dynamic, resizable storage for student records.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-logo">SMS<span class="dot">.</span></div>
+      <p class="footer-title">Student Management System Project</p>
+      <p class="footer-sub">Built using C++ and Web Technologies</p>
+      <div class="footer-divider"></div>
+      <p class="footer-copy">© 2024 College Project · All rights reserved</p>
+    </div>
+  </footer>
+
+  <script>
+/* ================================================
+   Student Management System – script.js
+   Handles: navbar, reveal animations, demo CRUD
+================================================ */
+
+/* ── NAVBAR ── */
+const navbar   = document.getElementById('navbar');
+const burger   = document.getElementById('burger');
+const navLinks = document.getElementById('navLinks');
+
+window.addEventListener('scroll', () => {
+  navbar.classList.toggle('scrolled', window.scrollY > 30);
+});
+
+burger.addEventListener('click', () => {
+  const open = navLinks.classList.toggle('open');
+  navbar.classList.toggle('menu-open', open);
+  document.body.style.overflow = open ? 'hidden' : '';
+});
+
+navLinks.querySelectorAll('a').forEach(link => {
+  link.addEventListener('click', () => {
+    navLinks.classList.remove('open');
+    navbar.classList.remove('menu-open');
+    document.body.style.overflow = '';
+  });
+});
+
+/* ── REVEAL ON SCROLL ── */
+const revealEls = document.querySelectorAll('.reveal');
+const revealObs = new IntersectionObserver(
+  (entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        revealObs.unobserve(entry.target);
+      }
+    });
+  },
+  { threshold: 0.12 }
+);
+revealEls.forEach(el => revealObs.observe(el));
+
+/* ── ACTIVE NAV LINK HIGHLIGHT ── */
+const sections = document.querySelectorAll('section[id]');
+const allLinks  = document.querySelectorAll('.nav-links a');
+
+const sectionObs = new IntersectionObserver(
+  (entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        allLinks.forEach(l => l.removeAttribute('style'));
+        const active = document.querySelector(`.nav-links a[href="#${entry.target.id}"]`);
+        if (active) active.style.color = 'var(--white)';
+      }
+    });
+  },
+  { threshold: 0.4 }
+);
+sections.forEach(s => sectionObs.observe(s));
+
+/* ─────────────────────────────────────────────
+   DEMO – Student CRUD
+───────────────────────────────────────────── */
+const students  = [];  // In-memory "database" (mirrors C++ vector)
+
+const idInput   = document.getElementById('studentId');
+const nameInput = document.getElementById('studentName');
+const ageInput  = document.getElementById('studentAge');
+const addBtn    = document.getElementById('addStudentBtn');
+const formMsg   = document.getElementById('formMsg');
+const tbody     = document.getElementById('studentTbody');
+const emptyState= document.getElementById('emptyState');
+const countBadge= document.getElementById('countBadge');
+
+/* ── Helpers ── */
+function setMsg(msg, type = 'success') {
+  formMsg.textContent = msg;
+  formMsg.className   = `form-msg ${type}`;
+  setTimeout(() => { formMsg.textContent = ''; formMsg.className = 'form-msg'; }, 3000);
+}
+
+function updateBadge() {
+  const n = students.length;
+  countBadge.textContent = n === 0 ? '0 records' : `${n} record${n > 1 ? 's' : ''}`;
+}
+
+function renderTable() {
+  tbody.innerHTML = '';
+
+  if (students.length === 0) {
+    emptyState.style.display = 'flex';
+    return;
+  }
+  emptyState.style.display = 'none';
+
+  students.forEach((s, index) => {
+    const tr = document.createElement('tr');
+    tr.classList.add('row-enter');
+    tr.innerHTML = `
+      <td><strong style="color:var(--accent2)">${escapeHtml(String(s.id))}</strong></td>
+      <td>${escapeHtml(s.name)}</td>
+      <td>${escapeHtml(String(s.age))}</td>
+      <td>
+        <button class="del-btn" data-index="${index}" aria-label="Delete student ${escapeHtml(s.name)}">
+          Delete
+        </button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // Attach delete listeners
+  tbody.querySelectorAll('.del-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.getAttribute('data-index'), 10);
+      deleteStudent(idx);
+    });
+  });
+}
+
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/* ── Add ── */
+function addStudent() {
+  const id   = idInput.value.trim();
+  const name = nameInput.value.trim();
+  const age  = ageInput.value.trim();
+
+  // Validation
+  if (!id || !name || !age) {
+    setMsg('⚠ Please fill in all fields.', 'error');
+    return;
+  }
+  const idNum  = parseInt(id,  10);
+  const ageNum = parseInt(age, 10);
+
+  if (isNaN(idNum) || idNum <= 0) {
+    setMsg('⚠ Student ID must be a positive number.', 'error');
+    return;
+  }
+  if (name.length < 2) {
+    setMsg('⚠ Name must be at least 2 characters.', 'error');
+    return;
+  }
+  if (isNaN(ageNum) || ageNum < 1 || ageNum > 99) {
+    setMsg('⚠ Age must be between 1 and 99.', 'error');
+    return;
+  }
+
+  // Duplicate ID check (mirrors unique-ID logic in C++)
+  if (students.some(s => s.id === idNum)) {
+    setMsg(`⚠ Student ID ${idNum} already exists.`, 'error');
+    return;
+  }
+
+  students.push({ id: idNum, name, age: ageNum });
+  renderTable();
+  updateBadge();
+  setMsg(`✓ Student "${name}" added successfully.`, 'success');
+
+  // Clear form
+  idInput.value   = '';
+  nameInput.value = '';
+  ageInput.value  = '';
+  idInput.focus();
+}
+
+/* ── Delete ── */
+function deleteStudent(index) {
+  const removed = students.splice(index, 1)[0];
+  renderTable();
+  updateBadge();
+  setMsg(`✓ "${removed.name}" removed from records.`, 'success');
+}
+
+/* ── Event Listeners ── */
+addBtn.addEventListener('click', addStudent);
+
+[idInput, nameInput, ageInput].forEach(inp => {
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter') addStudent();
+  });
+});
+
+/* ── Initial render ── */
+renderTable();
+updateBadge();
+  </script>
+</body>
+</html>
